@@ -1,0 +1,624 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>The Architecture of Open Source Applications: Battle for Wesnoth</TITLE>
+	<META NAME="GENERATOR" CONTENT="LibreOffice 3.3  (Unix)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="NSI ">
+	<META NAME="CHANGED" CONTENT="20110614;11333400">
+	<META NAME="provenance" CONTENT="$Id: wesnoth.html 184 2011-05-29 21:18:57Z amy $">
+	<SCRIPT SRC="wesnoth_files/ga.js"></SCRIPT>
+	<SCRIPT>
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-1301159-2']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</SCRIPT>
+	<STYLE TYPE="text/css">
+	<!--
+		P { font-family: sans-serif }
+		TD P { font-family: sans-serif }
+		H1.chapterauthor { font-style: italic }
+		H2.cjk { font-family: "WenQuanYi Micro Hei" }
+		H2.ctl { font-family: "Lohit Hindi" }
+		PRE.cjk { font-family: "WenQuanYi Micro Hei", monospace }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<TABLE CELLPADDING=2 CELLSPACING=2 STYLE="page-break-before: always">
+	<TR>
+		<TD STYLE="; border: none; padding: 0in">
+			<P><FONT COLOR="#000080"><A HREF="http://www.aosabook.org/en/index.html"><FONT COLOR="#000080"><IMG SRC="wesnoth_html_5c5098d5.jpg" NAME="graphics1" ALIGN=BOTTOM WIDTH=426 HEIGHT=99 BORDER=1></FONT></A></FONT>
+						</P>
+		</TD>
+		<TD STYLE="border: none; padding: 0in">
+			<P STYLE="border: none; padding: 0in"><STRONG><EM><A HREF="http://www.lulu.com/content/paperback-book/the-architecture-of-open-source-applications/10559746">A
+			Arquitetura de Aplicações Open Source</A></EM></STRONG> <BR><STRONG>Amy
+			Brown e Greg Wilson (eds.)</STRONG> <BR>ISBN 978-1-257-63801-7
+			<BR><EM><A HREF="http://www.aosabook.org/en/intro.html#license"><SPAN LANG="pt-BR">Licença</SPAN></A></EM>
+			/ <EM><A HREF="http://www.aosabook.org/en/index.html#purchase"><SPAN LANG="pt-BR">Comprar</SPAN></A></EM>
+			/ <EM><A HREF="http://www.aosabook.org/en/index.html#news"><SPAN LANG="pt-BR">Notícias</SPAN></A></EM>
+			/ <EM><A HREF="http://www.aosabook.org/en/index.html#contribute"><SPAN LANG="pt-BR">Contribuições</SPAN></A></EM>
+			/ <EM><A HREF="http://www.aosabook.org/en/faq.html">FAQ</A></EM> 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<H1 LANG="pt-BR">Capítulo 25. Batalha por Wesnoth</H1>
+<H1 CLASS="chapterauthor"><A HREF="http://www.aosabook.org/en/intro.html#shimooka-richard">Richard
+Shimooka</A> e <A HREF="http://www.aosabook.org/en/intro.html#white-david">David
+White</A></H1>
+<P LANG="pt-BR">Programação tente a ser considerada simplesmente
+uma atividade de resolução de problemas, onde o desenvolvedor tem
+um problema e o código tem uma solução. Beleza é normalmente
+julgada pela elegância ou efetividade da implementação técnica;
+este livro está repleto com excelentes exemplos. Ainda além das
+funções computacionais imediatas, o código pode ter um profundo
+efeito na vida das pessoas. Ele pode inspirar pessoas a participar e
+criar um novo contexto. Infelizmente, existem sérias barreiras que
+impedem indivíduos de participar em um projeto.</P>
+<P><SPAN LANG="pt-BR">A maioria das linguagens de programação pede
+uma alta capacitação técnica para ser utilizada, o que as deixa
+</SPAN><FONT FACE="sans-serif"><SPAN LANG="pt-BR">fora do alcance de
+muitos. Adicionalmente, melhorar a acesso ao código é tecnicamente
+difícil e não é essencial para muitos programadores. Isto
+raramente se traduz em </SPAN></FONT><FONT FACE="sans-serif"><SPAN LANG="pt-BR"><I>scripts</I></SPAN></FONT><FONT FACE="sans-serif"><SPAN LANG="pt-BR">
+de código limpo ou soluções de programação inteligentes. Atingir
+facilidade de acesso ao código requer antecipação da arquitetura
+do projeto e do programa, o que normalmente é contra-intuitivo para
+os padrões normais de programação. Além disso, a maioria dos
+projetos depende de estabelecer uma equipe de profissionais
+capacitada de quem se espera um trabalho de alto nível. Estes não
+requerem recursos adicionais de programação. Portanto, facilitar o
+acesso ao código fica para mais tarde, se chegar a ser considerado. </SPAN></FONT>
+</P>
+<P LANG="pt-BR">Nosso projeto, a Batalha por Wesnoth, tenta endereçar
+este problema desde o início. O programa é um jogo de estratégia e
+fantasia, produzido no modelo de código livre, baseado na licença
+GPL2. Ele tem atingido um sucesso moderado, com acima de quatro
+milhões de downloads até o momento da escrita deste texto. Apesar
+desta métrica impressionante, nós acreditamos que a real beleza de
+nosso projeto é o modelo de desenvolvimento que permite que grupos
+de voluntários com diversos níveis de capacitação possam
+interagir de forma produtiva.</P>
+<P LANG="pt-BR">Facilitar a codificação não era um objetivo vago
+definido pelos desenvolvedores, era visto como essencial para a
+sobrevivência do projeto. A abordagem de código livre do Wesnoth
+imaginava que o projeto poderia não receber imediatamente um número
+grande de desenvolvedores de alto nível. Tornar o projeto acessível
+para um grande número de contribuidores, com variados níveis de
+proficiência poderia garantir a viabilidade do projeto à
+longo-prazo.</P>
+<P LANG="pt-BR">Nossos desenvolvedores tem tentado definir as
+fundações para a ampliação do acesso ao código desde as
+primeiras iterações. Isso deveria ter inegáveis consequências
+para todos os aspectos da arquitetura de programação. As principais
+decisões foram tomadas com este objetivo em mente. Neste capítulo
+será apresentado um estudo aprofundado que examina nosso programa
+com foco nos esforços para aumentar esta facilidade de acesso ao
+código.</P>
+<P LANG="pt-BR">A primeira parte deste capítulo apresenta uma visão
+geral sobre a programação do projeto, abrangendo a linguagem
+utilizada, dependências e arquitetura. A segunda parte irá focar na
+linguagem de armazenamento de dados única do Wesnoth, conhecida como
+Wesnoth Markup Language (WML). Serão explicadas as funções
+específicas do WML, com uma enfase especial nos seus efeitos em
+unidades dos jogos. A seção seguinte cobre a implementação para
+multijogador e programas externos. O capítulo termina com algumas
+observações finais sobre os desafios e a ampliação da
+participação de desenvolvedores.</P>
+<H2 LANG="pt-BR" CLASS="western">25.1. Resumo do Projeto</H2>
+<P><SPAN LANG="pt-BR">O núcleo do Wesnoth foi escrito em C++,
+totalizando por volta de 200 mil linhas no momento desta publicação.
+Ele representa a parte principal do jogo, aproximadamente metade do
+código total, sem nenhum conteúdo. O programa também permite que o
+conteúdo do jogo seja definido em uma única linguagem conhecida
+como Wesnoth Markup Language (WML). O jogo conta com outras 250 mil
+linhas de código WML. Esta proporção tem alterado durante a
+existência do projeto. Enquanto o programa amadurece, o conteúdo de
+jogo que é escrito em C++ tem sido reescrito, de forma que WML pode
+ser usado para definir sua operação. A <A HREF="http://www.aosabook.org/pt-BR/wesnoth.html#fig.wes.arch">Figura
+25.1</A> trás uma visão simplificada da arquitetura do programa,
+áreas destacadas são mantidas pelos desenvolvedores Wesnoth,
+enquanto áreas brancas são dependências externas.</SPAN></P>
+<P><BR><BR>
+</P>
+<DIV ID="fig.wes.arch" DIR="LTR">
+	<P><IMG SRC="wesnoth_html_m19c4d0b0.gif" NAME="graphics2" ALIGN=BOTTOM WIDTH=356 HEIGHT=121 BORDER=0>
+		</P>
+	<P>Figure&nbsp;25.1: <SPAN LANG="pt-BR">Arquitetura do programa</SPAN></P>
+</DIV>
+<P LANG="pt-BR">Em geral, as tentativas dos projetos em minimizar
+dependências na maioria dos casos de forma a maximizar a
+portabilidade do aplicativo. Isto traz o benefício adicional de
+reduzir a complexidade do programa, e diminuir a necessidade de
+desenvolvedores para aprender as nuâncias do grande número de APIs
+de terceiros. Ao mesmo tempo, o uso controlado de algumas
+dependências pode atingir o mesmo efeito. Por exemplo, Wesnoth usa o
+<SPAN LANG="en-US"><I>Simple Directmedia Layer</I></SPAN> (SDL) para
+vídeo, controle de E/S e manipulação de eventos. Ele foi escolhido
+por ser fácil usar e prover uma interface comum de E/S para várias
+plataformas. Isto permite que ele seja portável para uma ampla lista
+de plataformas, outra alternativa seria codificar para APIs
+específicas em diferentes plataformas. Entretanto isto tem um preço,
+é mais difícil de tirar vantagens de funcionalidades específicas
+de alguma plataforma. SDL também tem uma família de bibliotecas que
+acompanham que são usados pela Wesnoth para vários objetivos:</P>
+<UL>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">SDL_Mixer para audio
+	e som</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">SDL_Image para
+	carregar imagens PNG e outros formatos de imagem 
+	</P>
+	<LI><P LANG="pt-BR">SDL_Net para entrada e saída de rede</P>
+</UL>
+<P LANG="pt-BR">Adicionalmente, Wesnoth utiliza várias outras
+bibliotecas:</P>
+<UL>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Otimizada para uma
+	variedade de funções avançadas de C++</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Pango e Cairo para
+	fontes internacionalizadas</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">zlib para compressão</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Python e Lua para
+	programação de scripts</P>
+	<LI><P LANG="pt-BR">GNU gettext para internacionalização</P>
+</UL>
+<P LANG="pt-BR">Na arquitetura do Wesnoth, o uso de objetos WML, como
+dicionários string com nós filhos – bastante onipresente. Vários
+objetos podem ser contruidos a partir de nós WML, e também se
+serializar como um nó WML. Algumas partes do <I>engine</I> mantém
+dados no formato baseado em dicionários WML, interpretando
+diretamente ao invés de parseando isso em estruturas de dados C++.</P>
+<P LANG="pt-BR">Wesnoth utiliza vários subsistemas importantes, a
+maioria dos quais são tão auto-contídos quanto possível. Esta
+estrutura segmentada tem vantagens para facilitar o acesso ao código.
+Uma parte interessada pode facilmente trabalhar um código em uma
+área específica e introduzir mudanças sem demandar o resto do
+programa. Uma subdivisão inclui:</P>
+<UL>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Um parseador WML com
+	pre-processamento</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Módulos de E/S
+	básica que abstraem bibliotecas subjacentes e chamadas de sistema –
+	um módulo de vídel, um módulo de som, um módulo de rede 
+	</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Um módulo GUI
+	contendo implementação de widget de botões, listas, menus e etc. 
+	</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Um módulo de
+	apresentação para o quadro do jogo, unidades animações e etc. 
+	</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Um módulo de IA 
+	</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">Um módulo
+	pathfinding que inclui várias funções utilitárias para lidar com
+	um quadro de jogo hexagonal 
+	</P>
+	<LI><P LANG="pt-BR">Um módulo de geração de mapas para gerar
+	diferentes tipos de mapas randômicos. 
+	</P>
+</UL>
+<P LANG="pt-BR">Existem também diferentes módulos para controlar
+diferentes partes do fluxo do jogo:</P>
+<UL>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">O módulo
+	<SPAN LANG="en-US"><I>titlescreen</I></SPAN>, para controlar a
+	apresentação da tela inicial. 
+	</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">O módulo <SPAN LANG="en-US"><I>storyline</I></SPAN>,
+	para apresentar sequência de corte de cena. 
+	</P>
+	<LI><P LANG="pt-BR" STYLE="margin-bottom: 0in">O módulo <SPAN LANG="en-US"><I>lobby</I></SPAN>,
+	para apresentar e permitir a configuração de jogos no servidor
+	<SPAN LANG="en-US"><I>multiplayer</I></SPAN>. 
+	</P>
+	<LI><P LANG="pt-BR">O módulo “<SPAN LANG="en-US"><I>play game</I></SPAN>”
+	que controla a jogabilidade principal.</P>
+</UL>
+<P><SPAN LANG="pt-BR">O módulo “</SPAN><SPAN LANG="en-US"><I>play
+game</I></SPAN>” <SPAN LANG="pt-BR">e o módulo de apresentação
+principal são os maiores dentro do Wesnoth. Seu objetivo é pouco
+definidas, porque suas funções tendem a mudar sempre e portanto são
+difíceis de ter uma clara especificação. Consequentemente, o
+módulo tem normalmente tem o perigo de apresentar o anti-padrão
+</SPAN><SPAN LANG="pt-BR"><I>Blob</I></SPAN> <SPAN LANG="pt-BR">sobre
+seus programas historicamente, tornando-se grandes segmento
+dominantes sem um comportamento bem definido. O código nos módulos
+</SPAN><SPAN LANG="pt-BR"><I>display</I></SPAN> <SPAN LANG="pt-BR">e
+</SPAN><SPAN LANG="pt-BR"><I>play game</I></SPAN> <SPAN LANG="pt-BR">são
+regularmente revistos para ver se algo pode ser separado em outro
+módulo. </SPAN>
+</P>
+<P LANG="pt-BR">Existe também funcionalidades antigas que são parte
+do projeto com um todo, mas estão separadas do programa principal.
+Isto inclui o servidor multiplayer que possibilita o jogo em rede,
+bem como o servidor de conteúdo que possibilita usuários fazer
+upload do seu conteúdo para um servidor comum visando compartilhar
+com outros. Ambos são escritos em C++. 
+</P>
+<H2 CLASS="western">25.2. Wesnoth Markup Language</H2>
+<P LANG="pt-BR">Como um <I>engine</I> de jogos extensivo, Wesnoth
+utiliza uma linguagem de dados simples para armazenar e recuperar
+todos os dados do jogo. Apesar de ter se considerado XML
+inicialmente, nós decidimos que nós deveríamos buscar algo um
+pouco mais amistoso para usuários não técnicos, e um pouco mais
+relaxado com respeito ao uso de dados visuais. Portanto, nós
+desenvolvemos nossa própria linguagem de dados, chamada Wesnoth
+Markup Language (WML). Isto foi planejado com vistas ao usuário
+menos técnico, esperando que mesmo usuários que achem Python e HTML
+intimidador possam ser capazes de entender arquivos WML. Todos os
+dados do jogo Wesnoth são armazenados em WML, incluindo definições
+de unidades, campanhas, cenários, definições da GUI, e outras
+configurações da lógica do jogo. 
+</P>
+<P LANG="pt-BR">A WML compartilha os mesmos atributos básicos do
+XML: elementos e atributos, enquanto ela não suporta texto dentro
+dos elementos. Atributos WML são representados simplesmente como um
+dicionário mapeando strings para strings, com a lógica da
+programação responsável pela interpretação dos atributos. Um
+exemplo simples de WML é uma definição truncada para a unidade
+Elvish Fighter dentro do jogo: 
+</P>
+<PRE CLASS="western">[unit_type]
+    id=Elvish Fighter
+    name= _ &quot;Elvish Fighter&quot;
+    race=elf
+    image=&quot;units/elves-wood/fighter.png&quot;
+    profile=&quot;portraits/elves/fighter.png&quot;
+    hitpoints=33
+    movement_type=woodland
+    movement=5
+    experience=40
+    level=1
+    alignment=neutral
+    advances_to=Elvish Captain,Elvish Hero
+    cost=14
+    usage=fighter
+    {LESS_NIMBLE_ELF}
+    [attack]
+        name=sword
+        description=_&quot;sword&quot;
+        icon=attacks/sword-elven.png
+        type=blade
+        range=melee
+        damage=5
+        number=4
+    [/attack]
+[/unit_type]</PRE><P>
+<SPAN LANG="pt-BR">Por considerar internacionalização importante no
+</SPAN><SPAN LANG="pt-BR"><I>Wesnoth</I></SPAN><SPAN LANG="pt-BR">,
+WML tem suporte direto para isso: valores de atributos que apresentam
+um </SPAN><SPAN LANG="pt-BR"><I>underscore</I></SPAN> <SPAN LANG="pt-BR">prefixado
+são traduzíveis. Qualquer </SPAN><SPAN LANG="pt-BR"><I>string</I></SPAN>
+<SPAN LANG="pt-BR">traduzível é convertida usando o GNU </SPAN><SPAN LANG="pt-BR"><I>gettext</I></SPAN>
+<SPAN LANG="pt-BR">para a versão traduzida quando o WML é
+interpretado. </SPAN>
+</P>
+<P LANG="pt-BR">Ao invés de ter diferentes documentos WML, <I>Wesnoth</I>
+optou pela abordagem de que todos os dados do jogo sejam apresentados
+para o <I>engine</I> do jogo em um único documento. Isto permite uma
+única variável global possa manter o documento, e quando o jogo for
+carregado todas as definições de unidades, por exemplo, são
+carregadas através da procura por elementos com nome <I>unit_type</I>
+dentro do elemento <I>units</I>. 
+</P>
+<P><SPAN LANG="pt-BR">Apesar de todos os dados serem armazenados em
+um único documento WML conceitual, ficaria mais complicado </SPAN><SPAN LANG="pt-BR"><SPAN STYLE="font-weight: normal">ter
+tudo em um único arquivo. Wesnoth então suporta um pré-processador
+que é executado sobre todo o WML antes da interpretação. Este
+proprocessador permite um arquivo a incluir o conteúdo de outro
+arquivo, ou um diretório inteiro. Por exemplo: </SPAN></SPAN>
+</P>
+<PRE CLASS="western" STYLE="margin-bottom: 0.2in">{gui/default/window/}</PRE><P LANG="pt-BR">
+irá incluir todos os arquivos .cfg de dentro do diretório
+gui/default/window/. 
+</P>
+<P LANG="pt-BR">Considerando que WML pode se tornar muito extensa, o
+pre-processador também permite que macros sejam definidas para
+condensar os conceitos. Por exemplo, a macro {LESS_NIMBLE_ELF} na
+definição do Elvish Fighter é uma chamada para a macro que torna
+certas unidades elfo menos ágil em certas condições, como quando
+eles estão parados em uma floresta: 
+</P>
+<PRE CLASS="western">#define LESS_NIMBLE_ELF
+    [defense]
+        forest=40
+    [/defense]
+#enddef</PRE><P LANG="pt-BR">
+Este projeto tem como vantagem tornar o <I>engine</I> desacoplado de
+como o documento WML é quebrado em arquivos. É responsabilidade dos
+autores WML decidir como estruturar e dividir todos os dados do jogo
+em diferentes arquivos e diretórios. 
+</P>
+<P LANG="pt-BR">Quando o <I>engine</I> do jogo carrega o documento
+WML, ele também define alguns símbolos do preprocessador, de acordo
+com várias configurações do jogo. Por exemplo, uma campanha
+Wesnoth pode definir diversas configurações de dificuldade, com
+cada configuração de dificuldade resultando em um símbolo de
+preprocessamento diferente sendo definido. Como um exemplo, um modo
+comum de variar a dificuldade é variando a quantidade de recursos
+dado para um oponente (representado por ouro). Para facilitar isto,
+uma macro WML é definida assim: 
+</P>
+<PRE CLASS="western">#define GOLD EASY_AMOUNT NORMAL_AMOUNT HARD_AMOUNT
+  #ifdef EASY
+    gold={EASY_AMOUNT}
+  #endif
+  #ifdef NORMAL
+    gold={NORMAL_AMOUNT}
+  #endif
+  #ifdef HARD
+    gold={HARD_AMOUNT}
+  #endif
+#enddef</PRE><P LANG="pt-BR">
+Esta macro pode ser invocada usando, por exemplo, {GOLD 50 100 200}
+dentro da definição de um oponente para definir quanto ouro o
+oponente tem baseado no grau de dificuldade. 
+</P>
+<P LANG="pt-BR">Considerando que o WML seja processado
+condicionalmente, se algum dos símbolos providos pelo documento WML
+mudar durante a execução do <I>engine</I> Wesnoth, todo o documento
+WML precisa ser recarregado e processado. Por exemplo, quando o
+usuário inicia o jogo, o documento WML é carregado e as campanhas
+disponíveis entre outras coisas são carregadas. Mas então, se o
+usuário escolhe para começar uma campanha e escolhe um certo nível
+de dificuldade, Easy por exemplo, então todo o documento terá que
+ser recarregado com o nível EASY definido. 
+</P>
+<P LANG="pt-BR">Este projeto é conveniente no qual um único
+documento contém todos os dados do jogo, e que símbolos possam
+permitir configuração simples do documento WML. Entretanto, como um
+projeto bem sucedido, mais e mais conteúdo torna-se disponível para
+Wesnoth, incluindo muito conteúdo que pode ser descido via internet-
+onde todo termina inserido na árvore de documentos principal – o
+que implica que documentos WML tenham um tamanho de vários
+megabytes. Isto tem se tornado um problema de performance para
+Wesnoth: Carregar os documentos pode passar de um minuto em alguns
+computadores, causando demoras durante o jogo cada vez que um
+documento precisa ser recarregado. Adicionalmente, é utilizado uma
+quantidade substancial de memória. Algumas medidas são usadas para
+contabilizar isso: quando uma campanha é carregada, ela tem um
+símbolo único para aquela campanha definido no preprocessador. Isto
+significa que qualquer conteúdo específico para a campanha pode
+usar #ifdef para somente ser usado quando a campanha for necessária.
+</P>
+<P><SPAN LANG="pt-BR">Adicionalmente, Wesnoth usa um sistema de cache
+para dinamizar a versão totalmente preprocessada do documento WML
+para um dado conjunto de definições principais. Naturalmente este
+sistema de cache precisa inspecionar a </SPAN><SPAN LANG="pt-BR"><I>timestamp</I></SPAN>
+<SPAN LANG="pt-BR">de todos os arquivos WML para para que se algum
+tiver sido alterado, o documento cacheado seja reprocessado.</SPAN></P>
+<H2 CLASS="western">25.3. <SPAN LANG="pt-BR">Unidades no </SPAN>Wesnoth</H2>
+<P LANG="pt-BR">Os protagonistas no Wesnoth são suas unidades, Um
+Elvish Fighter e um Elvish Shaman devem lutar contra um Troll Warrior
+e um Orcish Grunt. Todas unidades compartilham o mesmo comportamento
+básico, entretanto muitas tem habilidades especiais que alteram o
+fluxo normal da jogabilidade. Por exemplo, um Troll regenera um pouco
+de sua saúdo a cada rodada, um Elvish Shaman torna lentos seus
+oponentes com uma raiz encantada, e um Wose é invisível dentro da
+floresta.</P>
+<P LANG="pt-BR">Qual é a melhor forma para representar isto em um
+<I>engine</I> de jogo? É tentador fazer uma classe para a unidade
+base em C++, com diferentes unidades derivadas dela. Por exemplo, uma
+casse da unidade Wose poderia derivar desta unidade, e cada unidade
+poderia ter uma função virtual bool is_invisible() const, que
+retorna falso, a qual a unidade Wose sobrescreve, retornando
+verdadeiro se a unidade estiver na floresta.</P>
+<P LANG="pt-BR">Tal abordagem pode funcionar razoavelmente bem para
+um jogo com um conjunto limitado de regras. Infelizmente Wesnoth é
+um jogo bem extenso e tal abordagem não é facilmente extensível.
+Se uma pessoa quiser adicionar um novo tivo de unidade usando esta
+abordagem, isso requer adicionar uma nova classe C++ para o jogo.
+Adicionalmente, isto não permite diferentes características serem
+combinadas também: e se você tiver uma unidade que regenerada,
+puder desacelerar inimigos com uma rede, e ficar invisível em uma
+floresta? Você teria que escrever uma classe totalmente nova que
+duplicasse o código de outras classes.</P>
+<P LANG="pt-BR">As unidades de sistema do Wesnoth não usam herança
+nenhuma para cumprir suas tarefas. Ao invés disso, elas usam uma
+classe unidade para representar instâncias de unidades, e uma classe
+unit_type, que representa as características imutáveis que todas as
+unidades de um certo tipo compartilham. A classe unitária tem uma
+referência para o tipo de objeto que ela é. Todos os possíveis
+objetos unit_type são armazenados em um dicionário mantido
+globalmente que é carregado quando o documento WML principal é
+carregado. 
+</P>
+<P LANG="pt-BR">Um tipo de unidade tem uma lista de todas as
+habilidades que uma unidade possui. Por exemplo, um Troll tem a
+habilidade de “regeneração” que o permite curar a cada rodada.
+Um Saurian Skirmisher tem a habilidade “skirmisher” que o permite
+mover entre as linhas inimigas. Reconhecer estas habilidades é
+construído no engine – por exemplo, algorítimos de pathfinding
+devem checar se a unidades tem o flag “skirmisher” ligado para
+ver se ele pode mover livremente pelas linhas inimigas. Esta
+abordagem permite aos indivíduos adicionar novas unidades, que
+tenham alguma combinação de habilidades feitas pela engine, somente
+editando o WML. É claro, isso não permite adicionar habilidades
+completamente novas e comportamento novo sem modificar o engine.</P>
+<P><SPAN LANG="pt-BR"><SPAN STYLE="font-weight: normal">Adicionalmente,
+cada unidade no Wesnoth pode ter qualquer quantidade de formas de
+ataque. Por exemplo, um Elvish Archer tem um arco de longo alcance e
+também uma espada de ataque de curso alcance. Cada um apresenta
+diferentes quantidades de dano e características.</SPAN></SPAN> <SPAN LANG="pt-BR"><SPAN STYLE="font-weight: normal">Pra
+representar um ataque, existem classes attack_type, e cada instancia
+unit_type tem uma lista de possíveis attack_type.</SPAN></SPAN></P>
+<P LANG="pt-BR" STYLE="font-weight: normal">Para dar cada unidade
+mais caráter, Wesnoth tem uma funcionalidade conhecida como traits.
+Após recrutamento, a maioria das unidades são associadas a dois
+traits randomicamente de uma lista pré-definida. Por exemplo, uma
+unidade forte causa mais dano com seu melee attacks, enquanto uma
+unidade inteligente precisa menos experiência antes de subir de
+nível. Também, é possível para unidades adquirir equipamentos
+durante o jogo que as tornem mais poderosas. Por exemplo, deve haver
+uma espada que a unidade possa carregar que torne seus ataques mais
+danosos. Para implementar traits e equipamentos Wesnoth permite
+modificações nas unidades, que são alterações definidas no WML
+em estatísticas das unidades. As modificações podem inclusive ser
+aplicadas para um certo tipo de ataque. Por exemplo, o strong trait
+dá as unidades strong mais capacidade de dano quando atacando corpo
+a corpo, mas não quando usando um ataque à distância. 
+</P>
+<P LANG="pt-BR" STYLE="font-weight: normal">Permitir comportamento de
+unidades completamente configurável com WML seria um objetivo
+admirável, portanto é educativo considerar porque Wesnoth nunca
+atingiu tal objetivo. WML poderia precisar ser muito mais flexível
+do que ela é se ela permitisse comportamento de unidades arbitrário.
+Ao invés disso sendo uma linguagem orientada a dados, WML poderia
+ter que ser estendida em uma linguagem de programação plena e que
+poderia ser intimidadora para vários aspirantes contribuidores. 
+</P>
+<P LANG="pt-BR">Adicionalmente, o Wesnoth AI, que é desenvolvido em
+C++, reconhece as habilidades presentes no jogo. Ela leva em conta a
+regeneração, invisibilidade, e assim por diante, e tenta manobrar
+suas unidades para tirar o melhor proveito destas diferentes
+habilidades. Mesmo que uma habilidade da unidade pudesse ser criada
+usando WML, seria difícil fazer AI sofisticada o suficiente para
+reconhecer essa capacidade e tirar proveito dela. Implementar uma
+habilidade sem ser controlada pela AI não seria uma implementação
+satisfatória. Da mesma forma, implementar uma habilidade em WML e
+depois ter que modificar a AI em C++ para controlar a habilidade
+seria um contrassenso. Portanto, ter unidades definíveis em WML,
+porém tendo habilidades escritas no código da engine é considerado
+um compromisso razoável que funciona melhor para os requisitos
+específicos do Wesnoth. 
+</P>
+<H2 CLASS="western">25.4. Implementação Wesnoth de Multiplayer</H2>
+<P><SPAN LANG="pt-BR">A implementação multiplayer do Wesnoth
+utiliza uma abordagem tão simples quanto possível para implementar
+múltiplos jogadores. Se tenta mitigar a possibilidade de ataques
+maliciosos no servidor, mas não se faz um esforço serio para evitar
+trapassas. Qualquer movimento que é feito no jogo Wesnoth</SPAN><FONT COLOR="#000000"><SPAN STYLE="text-decoration: none">—</SPAN></FONT>
+<SPAN LANG="pt-BR">movimento de uma unidade atacando um inimigo,
+recrutando uma unidade, assim por diante</SPAN><FONT COLOR="#000000"><SPAN STYLE="text-decoration: none">—</SPAN></FONT>
+<SPAN LANG="pt-BR">pode ser salvo como um nó WML. Por exemplo, um
+comando para mover uma unidade pode ser salvo em um WML como o
+seguinte: </SPAN>
+</P>
+<PRE CLASS="western">[move]
+    x=&quot;11,11,10,9,8,7&quot;
+    y=&quot;6,7,7,8,8,9&quot;
+[/move]</PRE><P LANG="pt-BR">
+Isto mostra o caminho que uma unidade segue como um resultado dos
+comandos do jogador. O jogo então tem a capacidade de executar
+qualquer comando WML submetido. Isso é muito útil porque significa
+que um <I>replay</I> completo pode ser salvo, armazenando o estado
+inicial do jogo e então todos os comandos subsequentes. Ser capaz de
+rever jogos é útil tanto para os jogadores se observarem jogando,
+quanto para auxiliar em certos tipos de relatórios de bugs. 
+</P>
+<P LANG="pt-BR">Nós decidimos que a comunidade deveria tentar focar
+em jogos amistosos e casuais para a implementação do Wesnoth
+multiplayer via rede. Ao invés de uma batalha técnica contra
+crackers anti-sociais tentando comprometer sistemas de prevenção a
+trapassas o projeto simplesmente não tenta arduamente prevenir
+trapassas. Uma análise de outros jogos multiplayer indica que
+sistemas de ranqueamento competitivo foram a ponto central para
+comportamento anti-social. Prevenir deliberadamente tais funções no
+servidor reduziu grandemente a motivação para indivíduos
+trapacearem. Além disso, os moderadores tentam encorajar uma
+comunidade positiva de jogadores onde indivíduos desenvolvem relação
+pessoal com outros jogadores e jogam com eles. Isto estabeleceu uma
+enfase no relacionamento ao invés da competição. Como resultado
+estes esforços tem sido considerado bem sucedidos, enquanto esforços
+para hackear maliciosamente o jogo tem sido normalmente isolados. 
+</P>
+<P LANG="pt-BR">A implementação multiplayer do Wesnoth consistem em
+uma infraestrutura cliente-servidor típica. Um servidor, conhecido
+como wesnothd, acceita conexões vindas de clientes Wesnoth, e envia
+para o cliente um resumo dos jogos disponíveis. O Wesnoth irá
+apresentar um 'lobby' para o jogador que pode escolher um jogo para
+se juntar ou criar um novo jogo para outros se juntarem. Uma vez que
+os jogadores estejam em um jogo e o jogo comece, cada instância de
+Wesnoth irá gerar comandos WML descrevendo ações realizadas pelos
+jogadores. Estes comandos são enviados para o servidor, e então o
+servidor as retransmite para todos os outros clientes naquele jogo. O
+servidor irá portanto agir como um retransmissor bem simples e leve.
+Desde que Wesnoth seja um jogo baseado em turnos, TCP/IP é usado
+para todas as comunicações via rede. 
+</P>
+<P LANG="pt-BR">Este sistema também permite observadores facilmente
+assistirem um jogo. Um observador pode se juntar a um jogo sendo
+executado, neste caso o servidor irá enviar o WML que representa o
+estado inicial do jogo, seguido pelo histórico de comandos que tenha
+sido executado desde o estado inicial. Isto permite a novos
+observadores definir a velocidade para chegar ao estado atual do
+jogo. Eles podem ver a história do jogo, entretanto demora para que
+o observador chegue à posição atual do jogo. A história do jogo
+pode ser adiantada, entretanto mesmo assim isto toma tempo. A
+alternativa poderia ser que um dos clientes gerasse uma cópia do
+estado atual do WML e enviasse ao novo observador, entretanto esta
+abordagem poderia prejudicar os clientes com sobrecarga de
+observadores, e poderia facilitar ataques de denial-of-service
+através de muitos observadores ligados no jogo. 
+</P>
+<P LANG="pt-BR">É claro, desde que clientes Wesnoth não
+compartilham qualquer tipo de estado do jogo entre sí, somente
+enviando comandos, é importante que eles concordem com regras sobre
+o jogo. O servidor é segmentado por versão, com somente jogadores
+usando a mesma versão ou versões capazes de interagir. Jogadores
+são imediatamente alertados se seus clientes perderem sincronismo
+com outros. Isto também é um sistema útil para prevenir trapassas.
+Embora seja bem fácil para jogadores trapacear modificando seus
+clientes, qualquer diferença entre versões será imediatamente
+sinalizada para os jogadores para que possam lidar com isso. 
+</P>
+<H2 CLASS="western">25.5. <SPAN LANG="pt-BR">Conclusão</SPAN></H2>
+<P LANG="pt-BR">Nós acreditamos que a beleza da batalha de Wesnoth
+como um programa seja como o código foi tornado acessível para uma
+variedade de indivíduos. Para atingir este objetivo, o projeto
+sempre assumiu compromissos para não parecer elegante de alguma
+forma. Deve ser observado que muitos dos programadores mais
+talentosos do projeto desaprovam WML por sua sintaxe ineficiente.
+Ainda assim, este compromisso possibilita o grande sucesso do
+projeto. Hoje Wesnoth pode contar com centenas de campanhas e eras
+feitas por usuários, criadas por usuários com pouca ou nenhuma
+experiência em programação. Além disso, ele tem inspirado um
+número de pessoas a tentar programação como profissão, usando o
+projeto como uma ferramenta de aprendizado. Estes são resultados
+tangíveis que poucos programas podem igualar. 
+</P>
+<P LANG="pt-BR">Uma das lições chave que um leitor poderia observar
+além do esforço Wesnoth é considerar os desafios enfrentados por
+programadores menos habilidosos. Isto requer uma consciência sobre o
+que impede contribuidores de verdadeiramente realizarem codificação
+e desenvolverem suas habilidades. Por exemplo um indivíduo pode
+querer contribuir para o programa mas não ter habilidade em
+programação. Editores dedicados como emacs ou vim apresentam uma
+curva de aprendizado significativa que pode ser assustadora para tais
+indivíduos. Portanto WML foi projetada para permitir que um simples
+editor de textos possa abrir seus arquivos, dando a qualquer um as
+ferramentas para contribuir. 
+</P>
+<P LANG="pt-BR">Entretanto, aumentar a facilidade de acesso ao código
+à base de código não é um objetivo simples de ser atingido. Não
+existem regras rápidas e objetivas para aumentar a facilidade de
+acesso ao código. Ao invés, isso requer um equilíbrio entre
+diferentes considerações, que podem ter consequências negativas
+que a comunidade precisa conhecer. Isso é aparente em como o
+programa lidou com dependências. Em alguns casos, dependências
+podem na verdade aumentar as barreiras para participação, enquanto
+em outros casos elas podem permitir que pessoas contribuam mais
+facilmente. Cada questão precisa ser considerada caso a caso. 
+</P>
+<P LANG="pt-BR">Devemos também ser cautelosos para não exagerar o
+sucesso do Wesnoth. O projeto aproveita algumas vantagens que não
+são facilmente reproduzidas por outros programas. Tornar código
+acessível para um público amplo é em parte resultado das
+configurações dos programas. Legalmente a licença GNU permite que
+alguém abra um arquivo existente, entenda como ele funciona e faça
+mudanças. Indivíduos são encorajados para experimentar, aprender e
+compartilhar nesta cultura, que pode não ser apropriada para outros
+programas. Entretanto esperamos que haja certos elementos que possam
+se provar úteis para todos os desenvolvedores e ajudá-los em seu
+esforço para encontrar beleza na codificação. 
+</P>
+</BODY>
+</HTML>
